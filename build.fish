@@ -26,6 +26,10 @@ function verificar
     falla "Se necesita el SDK de .NET 10 o superior"
     return 1
   end
+  test -f CalculadoraDeSalarios.App/Assets/icon.ico -a -f CalculadoraDeSalarios.App/Assets/icon.png; or begin
+    falla "Faltan los íconos. Ejecuta primero: ./icono.fish ~/ruta/a/tu-logo.png"
+    return 1
+  end
 end
 function version_ok
   string match -qr '^\d+\.\d+\.\d+$' -- $argv[1]

@@ -2,12 +2,12 @@
 
 Aplicación de escritorio hecha con Avalonia y .NET 10 para liquidar nómina por horas: recargos nocturnos, horas extra, dominicales y festivos, auxilio de transporte y descuentos de salud y pensión. Exporta a PDF y Excel. La lógica está pensada para la nómina colombiana.
 
-> **Pensado para Linux.** Los scripts de compilación, pruebas y empaquetado están escritos en [Fish](https://fishshell.com/) y se probaron en Linux (CachyOS). En Windows todo se hace a mano con los comandos de `dotnet` (sección Windows). En macOS no se ha probado.
+> **Pensado para Linux.** Los scripts de compilación, pruebas y empaquetado están escritos en [Fish](https://fishshell.com/) y se probaron en Linux (CachyOS). En Windows hay scripts equivalentes en PowerShell (`build.ps1` e `icono.ps1`, sin probar) y también puedes usar los comandos de `dotnet` a mano (sección Windows). En macOS no se ha probado.
 
 | Sistema | Estado | Cómo |
 |---|---|---|
 | Linux | Probado | Scripts `build.fish` e `icono.fish` |
-| Windows | Compila y corre | Comandos manuales con `dotnet` |
+| Windows | Compila y corre | Scripts `build.ps1` e `icono.ps1` (sin probar) o comandos manuales con `dotnet` |
 | macOS | Sin probar | Comandos manuales con `dotnet` |
 
 ## Requisitos
@@ -28,9 +28,15 @@ En otras distribuciones instala los mismos paquetes con tu gestor.
 Clona el repo y entra a la carpeta:
 
 ```fish
-git clone (https://github.com/kelpiedeoz96/calculadora-salarios-colombia.git)
-cd CalculadoraDeSalarios
+git clone https://github.com/kelpiedeoz96/calculadora-salarios-colombia.git
+cd calculadora-salarios-colombia
 chmod +x build.fish icono.fish
+```
+
+Antes de compilar por primera vez, genera los íconos con tu logo (PNG, JPG o WebP de al menos 512×512 px):
+
+```fish
+./icono.fish ~/Imágenes/mi-logo.png
 ```
 
 ### Compilar, probar y ejecutar
@@ -81,6 +87,8 @@ sudo dnf install ./dist/linux/archivo.rpm
 
 ### Cambiar el ícono
 
+El repo **no incluye íconos** a propósito, para que cada quien ponga el suyo. **Este paso es obligatorio antes del primer `./build.fish`**: sin los archivos de ícono la compilación falla.
+
 Ten a la mano un logo de al menos 512×512 px (PNG, JPG o WebP):
 
 ```fish
@@ -99,7 +107,13 @@ env XDG_CONFIG_HOME=/tmp/cfg-prueba ./build.fish ejecutar
 
 ## Windows
 
-Los scripts `.fish` no funcionan en Windows. Haz esto desde PowerShell, dentro de la carpeta del proyecto (donde está el `.sln`).
+Los scripts `.fish` no funcionan en Windows. Usa los `.ps1` o los comandos de `dotnet`, siempre desde PowerShell y dentro de la carpeta del proyecto (donde está el `.sln`).
+
+Para poder ejecutar los `.ps1`, habilita los scripts solo en esa ventana:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+```
 
 **1. Instala el SDK de .NET 10** y abre una terminal nueva:
 
@@ -110,7 +124,21 @@ dotnet --version
 
 Debe mostrar `10.x.x`.
 
-**2. Compila, prueba y ejecuta:**
+**2. Genera los íconos.** El repo no los incluye y sin ellos el build falla. Instala ImageMagick (`winget install ImageMagick.ImageMagick`, y abre una terminal nueva) y ejecuta con tu logo (PNG, JPG o WebP de al menos 512×512 px):
+
+```powershell
+.\icono.ps1 C:\ruta\a\mi-logo.png
+```
+
+Si prefieres hacerlo a mano, mira el paso 5.
+
+**3. Compila, prueba y ejecuta.** Con el menú de `build.ps1`:
+
+```powershell
+.\build.ps1
+```
+
+O directo, con `.\build.ps1 compilar`, `probar`, `ejecutar`, `portable` o `todo`. O con los comandos de `dotnet`:
 
 ```powershell
 dotnet build CalculadoraDeSalarios.sln -c Release
@@ -118,7 +146,7 @@ dotnet test CalculadoraDeSalarios.Tests -c Release
 dotnet run --project CalculadoraDeSalarios.App -c Release
 ```
 
-**3. Genera una carpeta portable** (se puede copiar a otro equipo sin instalar .NET):
+**4. Genera una carpeta portable** (se puede copiar a otro equipo sin instalar .NET):
 
 ```powershell
 dotnet publish CalculadoraDeSalarios.App -c Release -r win-x64 --self-contained true -o dist\portable-win-x64
@@ -127,7 +155,7 @@ dotnet publish CalculadoraDeSalarios.App -c Release -r win-x64 --self-contained 
 
 Comprime esa carpeta en un `.zip` para compartirla. Windows puede mostrar una advertencia de SmartScreen porque el ejecutable no está firmado.
 
-**4. Cambia el ícono a mano.** En Windows solo importan estos dos archivos:
+**5. Cambia el ícono a mano** (alternativa a `icono.ps1`). En Windows solo importan estos dos archivos:
 
 - `CalculadoraDeSalarios.App\Assets\icon.png`: ícono de la ventana (512×512 px recomendado).
 - `CalculadoraDeSalarios.App\Assets\icon.ico`: ícono del ejecutable (debe traer varios tamaños, de 16 a 256 px).
@@ -142,14 +170,14 @@ magick base.png -define icon:auto-resize=256,128,64,48,32,16 CalculadoraDeSalari
 
 Sin ImageMagick, haz el PNG cuadrado con cualquier editor y conviértelo a `.ico` con un conversor en línea. Luego vuelve a publicar.
 
-**5. Instaladores `.exe` y `.msi`.** No se pueden generar desde Windows nativo. Hay dos caminos:
+**6. Instaladores `.exe` y `.msi`.** No se pueden generar desde Windows nativo. Hay dos caminos:
 
-- Usar la carpeta portable del paso 3.
+- Usar la carpeta portable del paso 4.
 - Usar WSL2 con una distro Linux, donde instalas `fish`, `nsis`, `msitools` y el SDK de .NET 10, y sigues la sección Linux.
 
 ## macOS
 
-No se ha probado. En teoría funcionan los mismos comandos manuales de la sección Windows, cambiando el `-r win-x64` por `osx-arm64` (Apple Silicon) o `osx-x64` (Intel). Si lo pruebas, abre un issue contando cómo te fue.
+No se ha probado. En teoría funcionan los mismos comandos manuales de la sección Windows, cambiando el `-r win-x64` por `osx-arm64` (Apple Silicon) o `osx-x64` (Intel). El ícono personalizado se ve en la ventana, pero no en el Dock: para eso hace falta armar un paquete `.app` con un `.icns`, y eso no está hecho. Si lo pruebas, abre un issue contando cómo te fue.
 
 ## Primer arranque
 
@@ -182,6 +210,8 @@ CalculadoraDeSalarios.Tests    pruebas automáticas (xUnit) y datos de prueba
 packaging                      scripts e insumos para generar los instaladores
 build.fish                     compilar, probar, ejecutar y empaquetar (Linux)
 icono.fish                     genera los íconos desde tu logo (Linux)
+build.ps1                      compilar, probar, ejecutar y portable (Windows, sin probar)
+icono.ps1                      genera los íconos desde tu logo (Windows, sin probar)
 ```
 
 ## Problemas comunes
@@ -197,4 +227,6 @@ Esta herramienta ayuda a calcular y no reemplaza la asesoría de un contador o a
 
 ## Licencia
 
-Por definir.
+MIT. Mira el archivo [LICENSE](LICENSE).
+
+Los PDF se generan con [QuestPDF](https://www.questpdf.com/) bajo su licencia Community, que no es MIT: es gratis para personas y empresas pequeñas, pero si tu organización supera el umbral de ingresos que fija QuestPDF necesitas una licencia comercial. Revisa sus condiciones antes de usarlo en una empresa.
