@@ -28,7 +28,7 @@ En otras distribuciones instala los mismos paquetes con tu gestor.
 Clona el repo y entra a la carpeta:
 
 ```fish
-git clone URL-DEL-REPO
+git clone (https://github.com/kelpiedeoz96/calculadora-salarios-colombia.git)
 cd CalculadoraDeSalarios
 chmod +x build.fish icono.fish
 ```
